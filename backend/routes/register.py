@@ -67,9 +67,13 @@ def register_student(
 
         for file in files:
             file_path = os.path.join(student_folder, file.filename)
+
             with open(file_path, "wb") as f:
                 f.write(file.file.read())
-            image_paths.append(file_path)
+
+            abs_path = os.path.abspath(file_path)  # 🔥 IMPORTANT
+            image_paths.append(abs_path)
+        conn.commit()
 
         # 🔹 call ML
         ml_response = register_ml(student_id, image_paths)
@@ -77,8 +81,17 @@ def register_student(
         # 🔴 ML failed → rollback ONLY if new student
         if ml_response.get("status") != "success":
             if not existing:
-                cursor.execute("DELETE FROM students WHERE id=%s", (student_id,))
-                conn.commit()
+                # 🔥 open new connection for cleanup
+                cleanup_conn = get_connection()
+                cleanup_cursor = cleanup_conn.cursor()
+
+                cleanup_cursor.execute(
+                    "DELETE FROM students WHERE id=%s", (student_id,)
+                )
+
+                cleanup_conn.commit()
+                cleanup_cursor.close()
+                cleanup_conn.close()
 
             cursor.close()
             conn.close()

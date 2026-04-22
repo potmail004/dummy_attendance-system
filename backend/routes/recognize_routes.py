@@ -30,6 +30,8 @@ def recognize(
         )
         class_row = cursor.fetchone()
         if not class_row:
+            cursor.close()
+            conn.close()
             return {"error": "Class not found"}
         class_id = class_row[0]
 
@@ -40,6 +42,8 @@ def recognize(
         )
         teacher_row = cursor.fetchone()
         if not teacher_row:
+            cursor.close()
+            conn.close()
             return {"error": "Teacher not found"}
         teacher_id = teacher_row[0]
 
@@ -52,6 +56,8 @@ def recognize(
             (class_id, teacher_id),
         )
         if not cursor.fetchone():
+            cursor.close()
+            conn.close()
             return {"error": "Teacher not assigned to this class"}
 
         # 🔹 save images
@@ -61,14 +67,19 @@ def recognize(
         image_paths = []
         for file in files:
             file_path = os.path.join(class_folder, file.filename)
+
             with open(file_path, "wb") as f:
                 f.write(file.file.read())
-            image_paths.append(file_path)
+
+            abs_path = os.path.abspath(file_path)  # 🔥 IMPORTANT
+            image_paths.append(abs_path)
 
         # 🔹 call ML
         ml_response = recognize_ml(class_id, image_paths)
 
         if ml_response.get("status") != "success":
+            cursor.close()
+            conn.close()
             return {"error": ml_response.get("message", "ML failed")}
 
         cursor.close()
