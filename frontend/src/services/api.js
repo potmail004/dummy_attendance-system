@@ -39,5 +39,5 @@ export const getReport = async (data) => {
         body: JSON.stringify(data),
     });
 
-    return res; // ⚠️ return raw response (needed for file)
+    return res;
 };

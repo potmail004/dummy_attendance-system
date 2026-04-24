@@ -81,7 +81,7 @@ def register_student(
         # 🔴 ML failed → rollback ONLY if new student
         if ml_response.get("status") != "success":
             if not existing:
-                # 🔥 open new connection for cleanup
+                # 🔥 open new c+onnection for cleanup
                 cleanup_conn = get_connection()
                 cleanup_cursor = cleanup_conn.cursor()
 
