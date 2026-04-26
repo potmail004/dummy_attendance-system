@@ -12,17 +12,19 @@ def home():
     return {"message": "ML service running"}
 
 
-@app.post("/register")
-def register(data: dict):
-    student_id = data["student_id"]
-    image_paths = data["images"]
+class RegisterRequest(BaseModel):
+    student_id: int
+    images: list[str]
 
-    return register_student_service(student_id, image_paths)
+
+@app.post("/register")
+def register(req: RegisterRequest):
+    return register_student_service(req.student_id, req.images)
 
 
 class RecognizeRequest(BaseModel):
     class_id: int
-    image_paths: list
+    image_paths: list[str]
 
 
 @app.post("/recognize")
